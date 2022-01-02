@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/retatu/go-grpc/pb"
 	"github.com/retatu/go-grpc/services"
 	"google.golang.org/grpc"
 )
