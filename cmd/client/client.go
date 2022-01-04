@@ -22,7 +22,8 @@ func main() {
 	client := pb.NewUserServiceClient(connection)
 	// AddUser(client)
 	// AddUserVerbose(client)
-	AddUsers(client)
+	// AddUsers(client)
+	AddUsersStreamBoth(client)
 }
 
 func AddUser(client pb.UserServiceClient) {
@@ -110,4 +111,71 @@ func AddUsers(client pb.UserServiceClient) {
 		log.Fatalf("Could not recieve gRPC Response: %v", err)
 	}
 	fmt.Println(res)
+}
+
+func AddUsersStreamBoth(client pb.UserServiceClient) {
+	stream, err := client.AddUsersStreamBoth(context.Background())
+	if err != nil {
+		log.Fatalf("Could not make gRPC Request: %v", err)
+	}
+
+	reqs := []*pb.User{
+		&pb.User{
+			Id:    "0",
+			Name:  "Matheus",
+			Email: "mrehbein0@gmail.com",
+		},
+		&pb.User{
+			Id:    "1",
+			Name:  "Matheus 1",
+			Email: "mrehbein1@gmail.com",
+		},
+		&pb.User{
+			Id:    "2",
+			Name:  "Matheus 2",
+			Email: "mrehbein2@gmail.com",
+		},
+		&pb.User{
+			Id:    "3",
+			Name:  "Matheus 3",
+			Email: "mrehbein3@gmail.com",
+		},
+		&pb.User{
+			Id:    "4",
+			Name:  "Matheus 4",
+			Email: "mrehbein4@gmail.com",
+		},
+		&pb.User{
+			Id:    "5",
+			Name:  "Matheus 5",
+			Email: "mrehbein5@gmail.com",
+		},
+	}
+
+	wait := make(chan int)
+
+	go func() {
+		for _, req := range reqs {
+			fmt.Println("Sending user: ", req.Name)
+			stream.Send(req)
+			time.Sleep(time.Second * 2)
+		}
+		stream.CloseSend()
+	}()
+
+	go func() {
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Fatalf("Could not recieve the msg: %v", err)
+				break
+			}
+			fmt.Printf("Receiving %v com status %v \n", res.GetUser().GetName(), res.GetStatus())
+		}
+		close(wait)
+	}()
+	<-wait
 }
