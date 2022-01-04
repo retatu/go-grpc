@@ -55,7 +55,6 @@ func (*UserService) AddUserVerbose(req *pb.User, stream pb.UserService_AddUserVe
 	return nil
 }
 
-// AddUsers(ctx context.Context, opts ...grpc.CallOption) (UserService_AddUsersClient, error)
 func (*UserService) AddUsers(stream pb.UserService_AddUsersServer) error {
 	users := []*pb.User{}
 
@@ -78,4 +77,25 @@ func (*UserService) AddUsers(stream pb.UserService_AddUsersServer) error {
 	}
 
 	return nil
+}
+
+// AddUsersStreamBoth(ctx context.Context, opts ...grpc.CallOption) (UserService_AddUsersStreamBothClient, error)
+
+func (*UserService) AddUserVerbose(req *pb.User, stream pb.UserService_AddUsersStreamBothServer) error {
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			log.Fatalf("Could not recieve stream from the client: %v", err)
+		}
+		err = stream.Send(&pb.UserResultStream{
+			Status: "Added",
+			User:   req,
+		})
+		if err != nil {
+			log.Fatalf("Could not send stream to the client: %v", err)
+		}
+	}
 }
