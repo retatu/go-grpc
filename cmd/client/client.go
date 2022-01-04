@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 
 	"github.com/retatu/go-grpc/pb"
 	"google.golang.org/grpc"
@@ -20,7 +21,8 @@ func main() {
 
 	client := pb.NewUserServiceClient(connection)
 	// AddUser(client)
-	AddUserVerbose(client)
+	// AddUserVerbose(client)
+	AddUsers(client)
 }
 
 func AddUser(client pb.UserServiceClient) {
@@ -58,4 +60,54 @@ func AddUserVerbose(client pb.UserServiceClient) {
 		}
 		fmt.Println("Status: ", stream.Status)
 	}
+}
+
+func AddUsers(client pb.UserServiceClient) {
+	reqs := []*pb.User{
+		&pb.User{
+			Id:    "0",
+			Name:  "Matheus",
+			Email: "mrehbein0@gmail.com",
+		},
+		&pb.User{
+			Id:    "1",
+			Name:  "Matheus 1",
+			Email: "mrehbein1@gmail.com",
+		},
+		&pb.User{
+			Id:    "2",
+			Name:  "Matheus 2",
+			Email: "mrehbein2@gmail.com",
+		},
+		&pb.User{
+			Id:    "3",
+			Name:  "Matheus 3",
+			Email: "mrehbein3@gmail.com",
+		},
+		&pb.User{
+			Id:    "4",
+			Name:  "Matheus 4",
+			Email: "mrehbein4@gmail.com",
+		},
+		&pb.User{
+			Id:    "5",
+			Name:  "Matheus 5",
+			Email: "mrehbein5@gmail.com",
+		},
+	}
+	stream, err := client.AddUsers(context.Background())
+	if err != nil {
+		log.Fatalf("Could not make gRPC Request: %v", err)
+	}
+
+	for _, req := range reqs {
+		stream.Send(req)
+		time.Sleep(time.Second * 3)
+	}
+
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("Could not recieve gRPC Response: %v", err)
+	}
+	fmt.Println(res)
 }
