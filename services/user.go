@@ -25,7 +25,7 @@ func (*UserService) AddUser(ctx context.Context, req *pb.User) (*pb.User, error)
 
 // AddUserVerbose(ctx context.Context, in *User, opts ...grpc.CallOption) (UserService_AddUserVerboseClient, error)
 
-func (*UserService) AddUserVerbose(req *pb.User, stream pb.UserService_AddUserVerboseServer) {
+func (*UserService) AddUserVerbose(req *pb.User, stream pb.UserService_AddUserVerboseServer) error {
 	stream.Send(&pb.UserResultStream{
 		Status: "Init",
 		User:   &pb.User{},
